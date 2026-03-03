@@ -1,0 +1,28 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "visitors",
+      "queryScope": "Collection",
+      "fields": [
+        {"fieldPath": "status", "order": "Ascending"},
+        {"fieldPath": "entryTime", "order": "Descending"}
+      ]
+    },
+    {
+      "collectionGroup": "visitors",
+      "queryScope": "Collection",
+      "fields": [
+        {"fieldPath": "entryTime", "order": "Descending"},
+        {"fieldPath": "status", "order": "Ascending"}
+      ]
+    },
+    {
+      "collectionGroup": "daily_reports",
+      "queryScope": "Collection",
+      "fields": [
+        {"fieldPath": "date", "order": "Descending"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

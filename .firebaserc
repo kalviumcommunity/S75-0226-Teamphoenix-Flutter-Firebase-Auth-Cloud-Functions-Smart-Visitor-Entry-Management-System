@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "your-project-id"
+  },
+  "functions": {
+    "runtime": "nodejs18"
+  }
+}

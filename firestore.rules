@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write for authenticated users only
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+      allow read: if request.auth.uid != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /visitors/{visitorId} {
+      // Allow read for authenticated users
+      allow read: if request.auth.uid != null;
+      
+      // Allow write (create/update) for authenticated users
+      allow create, update: if request.auth.uid != null && 
+        request.resource.data.keys().hasAll(['name', 'email', 'phone', 'purpose', 'hostName', 'companyName', 'documentType', 'documentNumber']);
+      
+      // Allow delete for admin users only
+      allow delete: if request.auth.uid != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /daily_reports/{reportId} {
+      // Allow read for authenticated users
+      allow read: if request.auth.uid != null;
+      
+      // Allow write for system only (cloud functions)
+      allow write: if false;
+    }
+
+    // Default: Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
