@@ -22,13 +22,28 @@ class AuthService {
       );
 
       if (userCredential.user != null) {
+        // Update user's display name
+        try {
+          await userCredential.user!.updateDisplayName(name);
+          // Force refresh the current user to get updated displayName
+          await Future.delayed(const Duration(milliseconds: 500));
+          await _firebaseAuth.currentUser?.reload();
+        } catch (e) {
+          // Continue even if displayName update fails
+        }
+
         // Create user document in Firestore
-        await _userService.createUser(
-          uid: userCredential.user!.uid,
-          email: email,
-          name: name,
-          role: role,
-        );
+        try {
+          await _userService.createUser(
+            uid: userCredential.user!.uid,
+            email: email,
+            name: name,
+            role: role,
+          );
+        } catch (e) {
+          // Continue even if Firestore write fails
+        }
+
         return userCredential.user!.uid;
       }
       return null;

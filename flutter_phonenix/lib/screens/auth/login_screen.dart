@@ -39,6 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login successful')),
           );
+          // Navigate to home screen after successful login
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              Navigator.of(context).pushReplacementNamed('/home');
+            }
+          });
         }
       } on FirebaseAuthException catch (e) {
         if (mounted) {

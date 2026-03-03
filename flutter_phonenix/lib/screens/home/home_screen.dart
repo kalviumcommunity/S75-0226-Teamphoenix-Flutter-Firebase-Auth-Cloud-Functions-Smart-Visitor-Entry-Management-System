@@ -18,28 +18,89 @@ class _HomeScreenState extends State<HomeScreen> {
   final _visitorService = VisitorService();
   final _userService = UserService();
 
-  late User? _currentUser;
-  late AppUser? _userData;
+  User? _currentUser;
+  AppUser? _userData;
   int _insideCount = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _currentUser = _authService.currentUser;
-    _loadUserData();
-    _loadInsideCount();
+    // Reload user to ensure displayName is populated
+    _currentUser?.reload().then((_) {
+      if (mounted) {
+        setState(() {
+          _currentUser = _authService.currentUser;
+        });
+      }
+    }).catchError((e) {
+      // Silently fail, we'll use what we have
+    });
+    _loadData();
   }
 
-  Future<void> _loadUserData() async {
-    if (_currentUser != null) {
-      final userData = await _userService.getUser(_currentUser!.uid);
-      setState(() => _userData = userData);
+  Future<void> _loadData() async {
+    try {
+      if (_currentUser == null) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
+      }
+
+      AppUser? fetchedUser;
+      
+      try {
+        // Try to fetch user data from Firestore with timeout
+        fetchedUser = await _userService.getUser(_currentUser!.uid).timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => null,
+        );
+      } catch (e) {
+        // Silently fail - we'll use fallback data
+      }
+
+      // Use fetched data or create fallback from Firebase Auth
+      // Make sure to reload user first to get latest displayName
+      await _currentUser?.reload().catchError((_) {});
+      
+      final userData = fetchedUser ?? AppUser(
+        id: _currentUser!.uid,
+        email: _currentUser!.email ?? 'No email',
+        name: _currentUser!.displayName ?? 'User',
+        role: 'guard',
+        createdAt: DateTime.now(),
+      );
+
+      if (mounted) {
+        setState(() {
+          _userData = userData;
+          _isLoading = false;
+        });
+      }
+
+      // Load visitor count in background (don't wait for it)
+      _loadVisitorCount();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
-  Future<void> _loadInsideCount() async {
-    final visitors = await _visitorService.getInsideVisitors();
-    setState(() => _insideCount = visitors.length);
+  Future<void> _loadVisitorCount() async {
+    try {
+      final visitors = await _visitorService.getInsideVisitors().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => [],
+      );
+      if (mounted) {
+        setState(() => _insideCount = visitors.length);
+      }
+    } catch (e) {
+      // Silently fail
+    }
   }
 
   Future<void> _logout() async {
@@ -57,6 +118,11 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: _loadData,
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            tooltip: 'Refresh',
+          ),
           TextButton.icon(
             onPressed: _logout,
             icon: const Icon(Icons.logout, color: Colors.white),
@@ -65,33 +131,108 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       backgroundColor: AppTheme.backgroundColor,
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(AppTheme.spacingMedium),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Card
+              // User Profile Card
               Card(
+                elevation: 4,
                 child: Padding(
                   padding: const EdgeInsets.all(AppTheme.spacingMedium),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Welcome, ${_userData?.name ?? 'User'}',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryColor,
-                                ),
-                      ),
-                      const SizedBox(height: AppTheme.spacingSmall),
-                      Text(
-                        'Role: ${_userData?.role.toUpperCase() ?? 'GUARD'}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textSecondaryColor,
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor: AppTheme.primaryColor,
+                            child: Text(
+                              (_userData?.name ?? 'U').substring(0, 1).toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
+                          ),
+                          const SizedBox(width: AppTheme.spacingMedium),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _userData?.name ?? 'User',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimaryColor,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _userData?.email ?? 'No email',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: AppTheme.textSecondaryColor,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      Divider(color: AppTheme.textSecondaryColor.withOpacity(0.2)),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.security,
+                            color: AppTheme.primaryColor,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Role: ',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppTheme.textSecondaryColor,
+                                ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _userData?.role == 'admin'
+                                  ? AppTheme.primaryColor.withOpacity(0.2)
+                                  : Colors.blue.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              (_userData?.role ?? 'guard').toUpperCase(),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: _userData?.role == 'admin'
+                                        ? AppTheme.primaryColor
+                                        : Colors.blue,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

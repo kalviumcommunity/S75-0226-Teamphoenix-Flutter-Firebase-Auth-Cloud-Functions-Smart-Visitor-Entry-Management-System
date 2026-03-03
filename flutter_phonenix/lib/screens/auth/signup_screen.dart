@@ -47,7 +47,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Account created successfully')),
           );
-          Navigator.of(context).pushReplacementNamed('/home');
+          // Navigate to home screen after successful signup
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              Navigator.of(context).pushReplacementNamed('/home');
+            }
+          });
         }
       } on FirebaseAuthException catch (e) {
         if (mounted) {
