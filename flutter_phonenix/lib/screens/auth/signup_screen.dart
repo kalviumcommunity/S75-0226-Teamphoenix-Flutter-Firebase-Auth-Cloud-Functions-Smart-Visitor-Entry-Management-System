@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/index.dart';
 import '../../utils/index.dart';
-import 'login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -94,9 +93,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Text(
                   'Create Account',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppTheme.spacingXLarge),
@@ -133,7 +132,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       const SizedBox(height: AppTheme.spacingMedium),
                       DropdownButtonFormField<String>(
-                        value: _selectedRole,
+                        initialValue: _selectedRole,
                         onChanged: (value) {
                           if (value != null) {
                             setState(() => _selectedRole = value);
@@ -189,10 +188,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       const SizedBox(height: AppTheme.spacingMedium),
                       TextFormField(
                         controller: _confirmPasswordController,
-                        validator: (value) => Validators.validateConfirmPassword(
-                          _passwordController.text,
-                          value,
-                        ),
+                        validator: (value) =>
+                            Validators.validateConfirmPassword(
+                              _passwordController.text,
+                              value,
+                            ),
                         obscureText: _obscureConfirmPassword,
                         decoration: InputDecoration(
                           hintText: 'Confirm Password',
@@ -221,8 +221,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _signUp,
                         style: ElevatedButton.styleFrom(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 12.0),
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
                           backgroundColor: AppTheme.primaryColor,
                           disabledBackgroundColor: AppTheme.disabledColor,
                         ),
@@ -232,8 +231,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(
@@ -259,9 +259,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: Text(
                         'Login',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppTheme.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],

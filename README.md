@@ -1,5 +1,27 @@
+<<<<<<< HEAD
+# flutter_phonenix
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
+- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+
+
+=======
 # S75-0226-Teamphoenix-Flutter-Firebase-Auth-Cloud-Functions-Smart-Visitor-Entry-Management-System
 Team Phoenix rises from failure like a myth reborn — we refactor chaos into architecture, convert crashes into code, and emerge from every setback versioned, optimized, and production-ready.
+>>>>>>> origin/main
 # 📱 Concept-1: Exploring Flutter & Dart Fundamentals
 
 ## 🚀 Overview
@@ -88,4 +110,8 @@ void increment() {
   setState(() {
     count++;
   });
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main

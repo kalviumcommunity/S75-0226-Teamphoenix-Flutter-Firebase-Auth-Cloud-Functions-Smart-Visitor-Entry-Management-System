@@ -47,8 +47,6 @@ class AuthService {
         return userCredential.user!.uid;
       }
       return null;
-    } on FirebaseAuthException catch (e) {
-      rethrow;
     } catch (e) {
       rethrow;
     }
@@ -64,8 +62,6 @@ class AuthService {
         password: password,
       );
       return userCredential.user?.uid;
-    } on FirebaseAuthException catch (e) {
-      rethrow;
     } catch (e) {
       rethrow;
     }

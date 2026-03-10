@@ -5,7 +5,7 @@ import '../../utils/index.dart';
 import 'visitor_detail_screen.dart';
 
 class VisitorsListScreen extends StatefulWidget {
-  const VisitorsListScreen({Key? key}) : super(key: key);
+  const VisitorsListScreen({super.key});
 
   @override
   State<VisitorsListScreen> createState() => _VisitorsListScreenState();
@@ -14,7 +14,6 @@ class VisitorsListScreen extends StatefulWidget {
 class _VisitorsListScreenState extends State<VisitorsListScreen> {
   final _visitorService = VisitorService();
   String _filterStatus = 'all'; // 'all', 'inside', 'exited'
-  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
