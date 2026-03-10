@@ -5,18 +5,19 @@ import '../../utils/index.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  // ignore: use_super_parameters
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
+
+  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -29,129 +30,197 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      try {
-        await _authService.login(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
+
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+
+      await _authService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Login Successful")),
+      );
+
+      Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login successful')),
-          );
-          // Navigate to home screen after successful login
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              Navigator.of(context).pushReplacementNamed('/home');
-            }
-          });
+          Navigator.pushReplacementNamed(context, '/home');
         }
-      } on FirebaseAuthException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.message ?? AppConstants.genericError)),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text(AppConstants.genericError)),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
+      });
+
+    } on FirebaseAuthException catch (e) {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? AppConstants.genericError),
+        ),
+      );
+
+    } catch (e) {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(AppConstants.genericError),
+        ),
+      );
+
+    } finally {
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
+
     }
+
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppTheme.spacingLarge),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: AppTheme.spacingXLarge),
-                Text(
-                  'Smart Visitor Entry',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppTheme.spacingSmall),
-                Text(
-                  'Management System',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondaryColor,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppTheme.spacingXLarge),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _emailController,
-                        validator: Validators.validateEmail,
-                        decoration: InputDecoration(
-                          hintText: 'Email',
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusMedium,
-                            ),
+          padding: const EdgeInsets.all(AppTheme.spacingLarge),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+
+            children: [
+
+              const SizedBox(height: AppTheme.spacingXLarge),
+
+              /// TITLE
+              Text(
+                "Smart Visitor Entry",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
+                    ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingSmall),
+
+              Text(
+                "Management System",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.textSecondaryColor,
+                    ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingXLarge),
+
+              /// FORM
+              Form(
+                key: _formKey,
+
+                child: Column(
+                  children: [
+
+                    /// EMAIL
+                    TextFormField(
+                      controller: _emailController,
+                      validator: Validators.validateEmail,
+                      keyboardType: TextInputType.emailAddress,
+
+                      decoration: InputDecoration(
+                        hintText: "Email",
+                        prefixIcon: const Icon(Icons.email_outlined),
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusMedium,
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppTheme.spacingMedium),
-                      TextFormField(
-                        controller: _passwordController,
-                        validator: Validators.validatePassword,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outlined),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              );
-                            },
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    /// PASSWORD
+                    TextFormField(
+                      controller: _passwordController,
+                      validator: Validators.validatePassword,
+                      obscureText: _obscurePassword,
+
+                      decoration: InputDecoration(
+                        hintText: "Password",
+                        prefixIcon: const Icon(Icons.lock_outline),
+
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radiusMedium,
-                            ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusMedium,
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppTheme.spacingMedium),
-                      ElevatedButton(
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingSmall),
+
+                    /// FORGOT PASSWORD
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Forgot Password Coming Soon"),
+                            ),
+                          );
+                        },
+                        child: const Text("Forgot Password?"),
+                      ),
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    /// LOGIN BUTTON
+                    SizedBox(
+                      width: double.infinity,
+
+                      child: ElevatedButton(
                         onPressed: _isLoading ? null : _login,
+
                         style: ElevatedButton.styleFrom(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 12.0),
                           backgroundColor: AppTheme.primaryColor,
                           disabledBackgroundColor: AppTheme.disabledColor,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
+
                         child: _isLoading
                             ? const SizedBox(
-                                height: 20,
-                                width: 20,
+                                height: 22,
+                                width: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor:
@@ -159,41 +228,57 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               )
                             : const Text(
-                                'Login',
-                                style: TextStyle(color: Colors.white),
+                                "Login",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
                               ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppTheme.spacingLarge),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Don't have an account? ",
-                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const SignUpScreen(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        'Sign Up',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppTheme.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ),
+
                   ],
                 ),
-              ],
-            ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingLarge),
+
+              /// SIGNUP OPTION
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+
+                children: [
+
+                  Text(
+                    "Don't have an account?",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignUpScreen(),
+                        ),
+                      );
+                    },
+
+                    child: Text(
+                      "Sign Up",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ),
+
+                ],
+              ),
+
+            ],
           ),
         ),
       ),
