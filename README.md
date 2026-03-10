@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # flutter_phonenix
 
 A new Flutter project.
@@ -17,6 +18,10 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 
+=======
+# S75-0226-Teamphoenix-Flutter-Firebase-Auth-Cloud-Functions-Smart-Visitor-Entry-Management-System
+Team Phoenix rises from failure like a myth reborn — we refactor chaos into architecture, convert crashes into code, and emerge from every setback versioned, optimized, and production-ready.
+>>>>>>> origin/main
 # 📱 Concept-1: Exploring Flutter & Dart Fundamentals
 
 ## 🚀 Overview
@@ -105,4 +110,8 @@ void increment() {
   setState(() {
     count++;
   });
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main
